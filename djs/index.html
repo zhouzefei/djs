@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>倒计时</title>
+</head>
+
+<body>
+    <div id="djs"></div>
+    <script type="text/javascript">
+    var timeDjs = function(time) {
+        this.time = time;
+
+    };
+    //格式化
+    timeDjs.prototype.timeFormat = function() {
+        var o = {
+            "M+": this.time.getMonth() + 1, //month
+            "d+": this.time.getDate(), //day
+            "h+": this.time.getHours(), //hour
+            "m+": this.time.getMinutes(), //minute
+            "s+": this.time.getSeconds(), //second
+            "q+": Math.floor((this.time.getMonth() + 3) / 3), //quarter
+            "S": this.time.getMilliseconds() //millisecond
+        };
+        var format = 'yyyy-MM-dd hh:mm:ss';
+        if (/(y+)/.test(format))
+            format = format.replace(RegExp.$1, (this.time.getFullYear() + "").substr(4 - RegExp.$1.length));
+        for (var k in o)
+            if (new RegExp("(" + k + ")").test(format))
+                format = format.replace(RegExp.$1, RegExp.$1.length == 1 ? o[k] : ("00" + o[k]).substr(("" + o[k]).length));
+        return format;
+    };
+
+    //字符串转时间戳
+    timeDjs.prototype.transDate = function(timeStr) {
+        var date = new Date();
+        date.setFullYear(timeStr.substring(0, 4));
+        date.setMonth(timeStr.substring(5, 7) - 1);
+        date.setDate(timeStr.substring(8, 10));
+        date.setHours(timeStr.substring(11, 13));
+        date.setMinutes(timeStr.substring(14, 16));
+        date.setSeconds(timeStr.substring(17, 19));
+        return Date.parse(date);
+    };
+
+    /*倒计时时间计算*/
+    timeDjs.prototype.jianshao = function(date3) {
+        var days = Math.floor(date3 / (24 * 3600 * 1000));
+        var leave1 = date3 % (24 * 3600 * 1000); //计算天数后剩余的毫秒数
+        var hours = Math.floor(leave1 / (3600 * 1000));
+        var leave2 = leave1 % (3600 * 1000); //计算小时数后剩余的毫秒数
+        var minutes = Math.floor(leave2 / (60 * 1000));
+        var leave3 = leave2 % (60 * 1000); //计算分钟数后剩余的毫秒数
+        var seconds = Math.round(leave3 / 1000);
+        if (days > 0) {
+            hours = days * 24 + hours;
+        }
+        if (hours.toString().length < 2) {
+            hours = "0" + hours;
+        }
+        if (seconds.toString().length < 2) {
+            seconds = "0" + seconds;
+        }
+        if (minutes.toString().length < 2) {
+            minutes = "0" + minutes;
+        }
+        var result;
+        if(!minutes<0){
+            result=hours + '小时' + minutes + '分' + seconds + '秒';
+        }else{
+            result=0;
+        }
+        
+        return result;
+    }
+
+    //预计算的时间
+    var timeLine = new Date('2015-11-4 19:00:00');//可以改写成从页面获取
+    var line = new timeDjs(timeLine);
+    var timeLineNum = line.transDate(line.timeFormat());
+
+    //计算时间调用
+    function timeGet() {
+    	//初始化当前时间
+        var timeNow = new Date();
+        var nowStart = new timeDjs(timeNow);
+        var nowStartNum = nowStart.transDate(nowStart.timeFormat());
+
+        //计算时间差
+        var timeResult=nowStart.jianshao(timeLineNum - nowStartNum);
+        if(timeResult!=0){
+            var djsObj=setTimeout(timeGet,1000);
+        }else{
+            clearTimeout(djsObj);
+        }
+
+        //djs为页面id，用来展示倒计时的时间。。。。如果有多个地方要用到可以使用$.fn.方法名来改造，这里我用了原生js，就不做具体展示
+        document.getElementById("djs").innerHTML=timeResult;
+    }
+
+
+    timeGet();
+    
+    </script>
+</body>
+
+</html>
